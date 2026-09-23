@@ -193,7 +193,7 @@ func (check *Checker) funcType(sig *Signature, recvPar *ast.FieldList, ftyp *ast
 		}
 		// all type parameters' scopes start after the method name
 		scopePos := ftyp.Pos()
-		recv, rparams = check.collectRecv(recvPar.List[0], scopePos)
+		recv, rparams = check.collectRecv(recvPar.List[0], scopePos, ftyp.TypeParams != nil && len(ftyp.TypeParams.List) != 0)
 	}
 
 	// collect and declare function type parameters
@@ -223,7 +223,7 @@ func (check *Checker) funcType(sig *Signature, recvPar *ast.FieldList, ftyp *ast
 // collectRecv extracts the method receiver and its type parameters (if any) from rparam.
 // It declares the type parameters (but not the receiver) in the current scope, and
 // returns the receiver variable and its type parameter list (if any).
-func (check *Checker) collectRecv(rparam *ast.Field, scopePos token.Pos) (*Var, *TypeParamList) {
+func (check *Checker) collectRecv(rparam *ast.Field, scopePos token.Pos, isGenericMethod bool) (*Var, *TypeParamList) {
 	// Unpack the receiver parameter which is of the form
 	//
 	//	"(" [rfield] ["*"] rbase ["[" rtparams "]"] ")"
@@ -308,7 +308,9 @@ func (check *Checker) collectRecv(rparam *ast.Field, scopePos token.Pos) (*Var, 
 				smap := makeRenameMap(baseTParams, recvTParams)
 				for i, recvTPar := range recvTParams {
 					baseTPar := baseTParams[i]
-					check.mono.recordCanon(recvTPar, baseTPar)
+					if !isGenericMethod {
+						check.mono.recordCanon(recvTPar, baseTPar)
+					}
 					// baseTPar.bound is possibly parameterized by other type parameters
 					// defined by the generic base type. Substitute those parameters with
 					// the receiver type parameters declared by the current method.
