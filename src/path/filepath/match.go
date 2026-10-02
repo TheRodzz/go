@@ -83,6 +83,14 @@ Pattern:
 				}
 			}
 		}
+		// Before returning false with no error,
+		// check that the remainder of the pattern is syntactically valid.
+		for len(pattern) > 0 {
+			_, chunk, pattern = scanChunk(pattern)
+			if _, _, err := matchChunk(chunk, ""); err != nil {
+				return false, err
+			}
+		}
 		return false, nil
 	}
 	return len(name) == 0, nil

@@ -77,6 +77,7 @@ var matchTests = []MatchTest{
 	{"a[", "ab", false, ErrBadPattern},
 	{"a[", "x", false, ErrBadPattern},
 	{"a/b[", "x", false, ErrBadPattern},
+	{"a*[", "x", false, ErrBadPattern},
 	{"*x", "xxx", true, nil},
 }
 
